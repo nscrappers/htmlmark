@@ -52,8 +52,12 @@ def score_table_rows(
     fn = scorer if scorer is not None else _default_scorer
     scored: List[ScoredRow] = []
     for i, row in enumerate(rows):
+        if not isinstance(row, list):
+            raise ScoringError(f"row {i} must be a list, got {type(row).__name__}")
         try:
             s = float(fn(row))
+        except ScoringError:
+            raise
         except Exception as exc:
             raise ScoringError(f"scorer raised on row {i}: {exc}") from exc
         scored.append(ScoredRow(row=row, score=s))
@@ -70,8 +74,12 @@ def score_list_items(
     fn = scorer if scorer is not None else (lambda t: float(len(t.strip())))
     result: List[ScoredItem] = []
     for i, item in enumerate(items):
+        if not isinstance(item, str):
+            raise ScoringError(f"item {i} must be a str, got {type(item).__name__}")
         try:
             s = float(fn(item))
+        except ScoringError:
+            raise
         except Exception as exc:
             raise ScoringError(f"scorer raised on item {i}: {exc}") from exc
         result.append(ScoredItem(text=item, score=s))
