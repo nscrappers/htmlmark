@@ -57,9 +57,23 @@ def save_to_file(path: str) -> None:
 
 
 def load_from_file(path: str) -> int:
-    """Load cache entries from a JSON file. Returns the number of entries loaded."""
+    """Load cache entries from a JSON file. Returns the number of entries loaded.
+
+    Raises:
+        FileNotFoundError: If the given path does not exist.
+        ValueError: If the file does not contain a valid JSON object.
+    """
     global _memory_cache
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Cache file not found: {path}")
     with open(path, "r", encoding="utf-8") as fh:
-        data = json.load(fh)
+        try:
+            data = json.load(fh)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid JSON in cache file '{path}': {exc}") from exc
+    if not isinstance(data, dict):
+        raise ValueError(
+            f"Cache file '{path}' must contain a JSON object, got {type(data).__name__}"
+        )
     _memory_cache.update(data)
     return len(data)
