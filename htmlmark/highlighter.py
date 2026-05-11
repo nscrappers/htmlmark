@@ -16,6 +16,16 @@ def _check_rows(rows: List[List[str]], name: str = "rows") -> None:
             raise HighlightError(f"Each row in {name} must be a list")
 
 
+def _apply_marker(marker: str, value: str) -> str:
+    """Format *marker* with *value*, raising HighlightError on invalid templates."""
+    try:
+        return marker.format(value=value)
+    except KeyError as exc:
+        raise HighlightError(
+            f"marker template contains unknown placeholder {exc}; use {{value}}"
+        ) from exc
+
+
 def highlight_cells(
     rows: List[List[str]],
     pattern: str,
@@ -35,7 +45,7 @@ def highlight_cells(
             if column is not None and idx != column:
                 new_row.append(cell)
             elif regex.search(cell):
-                new_row.append(marker.format(value=cell))
+                new_row.append(_apply_marker(marker, cell))
             else:
                 new_row.append(cell)
         result.append(new_row)
@@ -60,7 +70,7 @@ def highlight_cells_with_fn(
                 match = fn(cell, r_idx, c_idx)
             except Exception as exc:
                 raise HighlightError(f"fn raised an error: {exc}") from exc
-            new_row.append(marker.format(value=cell) if match else cell)
+            new_row.append(_apply_marker(marker, cell) if match else cell)
         result.append(new_row)
     return result
 
@@ -77,6 +87,6 @@ def highlight_list_items(
     flags = 0 if case_sensitive else re.IGNORECASE
     regex = re.compile(pattern, flags)
     return [
-        marker.format(value=item) if regex.search(item) else item
+        _apply_marker(marker, item) if regex.search(item) else item
         for item in items
     ]
