@@ -60,6 +60,14 @@ def test_table_to_json_invalid_headers_raises():
         table_to_json("bad", ROWS)
 
 
+def test_table_to_json_output_is_valid_json_string():
+    """Ensure the raw return value is a valid JSON-encoded string."""
+    raw = table_to_json(HEADERS, ROWS)
+    assert isinstance(raw, str)
+    # Should not raise
+    json.loads(raw)
+
+
 # --- table_to_jsonl ---
 
 def test_table_to_jsonl_line_count():
@@ -75,6 +83,12 @@ def test_table_to_jsonl_each_line_valid_json():
 
 def test_table_to_jsonl_empty_rows_returns_empty_string():
     assert table_to_jsonl(HEADERS, []) == ""
+
+
+def test_table_to_jsonl_no_trailing_newline_on_empty():
+    """Empty input should return an empty string, not a bare newline."""
+    result = table_to_jsonl(HEADERS, [])
+    assert result == ""
 
 
 # --- table_to_tsv ---
@@ -94,6 +108,15 @@ def test_table_to_tsv_delimiter_is_tab():
     result = table_to_tsv(HEADERS, ROWS)
     assert "\t" in result
     assert "," not in result
+
+
+def test_table_to_tsv_values_correct():
+    """Verify data rows contain the expected cell values."""
+    lines = table_to_tsv(HEADERS, ROWS).splitlines()
+    # lines[0] is the header; lines[1] is the first data row
+    first_data_row = lines[1].split("\t")
+    assert first_data_row[0] == "Alice"
+    assert first_data_row[2] == "Berlin"
 
 
 # --- list_to_json ---
