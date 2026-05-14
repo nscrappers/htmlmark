@@ -14,6 +14,16 @@ from htmlmark.scorer import (
 )
 
 
+def _validate_index(collection: list, index: int, kind: str) -> None:
+    """Raise :class:`ScoringError` if *collection* is empty or *index* is out of range."""
+    if not collection:
+        raise ScoringError(f"no {kind}s found in HTML")
+    if index >= len(collection):
+        raise ScoringError(
+            f"{kind}_index {index} out of range (found {len(collection)})"
+        )
+
+
 def score_html_table(
     html: str,
     table_index: int = 0,
@@ -25,12 +35,7 @@ def score_html_table(
         ScoringError: if no tables are found or index is out of range.
     """
     tables = extract_tables(html)
-    if not tables:
-        raise ScoringError("no tables found in HTML")
-    if table_index >= len(tables):
-        raise ScoringError(
-            f"table_index {table_index} out of range (found {len(tables)})"
-        )
+    _validate_index(tables, table_index, "table")
     headers, rows = tables[table_index]
     return score_table_rows(headers, rows, scorer=scorer)
 
@@ -46,11 +51,6 @@ def score_html_list(
         ScoringError: if no lists are found or index is out of range.
     """
     lists = extract_lists(html)
-    if not lists:
-        raise ScoringError("no lists found in HTML")
-    if list_index >= len(lists):
-        raise ScoringError(
-            f"list_index {list_index} out of range (found {len(lists)})"
-        )
+    _validate_index(lists, list_index, "list")
     items = lists[list_index]
     return score_list_items(items, scorer=scorer)
