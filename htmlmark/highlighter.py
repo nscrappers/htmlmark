@@ -90,3 +90,36 @@ def highlight_list_items(
         _apply_marker(marker, item) if regex.search(item) else item
         for item in items
     ]
+
+
+def strip_markers(
+    rows: List[List[str]],
+    marker: str = "**{value}**",
+) -> List[List[str]]:
+    """Remove highlighting markers from cells, returning plain text values.
+
+    This is the inverse of :func:`highlight_cells`.  The *marker* template must
+    contain exactly one ``{value}`` placeholder; the surrounding literal text is
+    used to strip the decoration from each cell.
+
+    Example::
+
+        >>> strip_markers([["**hello**", "world"]])
+        [['hello', 'world']]
+    """
+    _check_rows(rows, "rows")
+    parts = marker.split("{value}")
+    if len(parts) != 2:
+        raise HighlightError(
+            "marker must contain exactly one {value} placeholder"
+        )
+    prefix, suffix = parts
+
+    def _strip(cell: str) -> str:
+        if prefix and cell.startswith(prefix):
+            cell = cell[len(prefix):]
+        if suffix and cell.endswith(suffix):
+            cell = cell[: len(cell) - len(suffix)]
+        return cell
+
+    return [[_strip(cell) for cell in row] for row in rows]
