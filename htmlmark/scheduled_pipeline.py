@@ -19,7 +19,19 @@ def schedule_table_job(
     on_result: Optional[Callable[[List[List[str]]], None]] = None,
     scheduler: Optional[Scheduler] = None,
 ) -> None:
-    """Register a recurring job that applies the table pipeline to *html*."""
+    """Register a recurring job that applies the table pipeline to *html*.
+
+    Args:
+        name: Unique name for this scheduled job.
+        html: HTML string to extract tables from on each run.
+        config: Optional extraction configuration; defaults to ``ExtractionConfig()``.
+        interval_seconds: How often (in seconds) the job should run.
+        on_result: Optional callback invoked with the extracted rows after each run.
+        scheduler: Scheduler instance to register the job on; uses the module-level
+            default scheduler when *None*.
+    """
+    if interval_seconds <= 0:
+        raise ValueError(f"interval_seconds must be positive, got {interval_seconds!r}")
     target = scheduler if scheduler is not None else _default_scheduler
     cfg = config or ExtractionConfig()
 
@@ -39,7 +51,19 @@ def schedule_list_job(
     on_result: Optional[Callable[[List[str]], None]] = None,
     scheduler: Optional[Scheduler] = None,
 ) -> None:
-    """Register a recurring job that applies the list pipeline to *html*."""
+    """Register a recurring job that applies the list pipeline to *html*.
+
+    Args:
+        name: Unique name for this scheduled job.
+        html: HTML string to extract list items from on each run.
+        config: Optional extraction configuration; defaults to ``ExtractionConfig()``.
+        interval_seconds: How often (in seconds) the job should run.
+        on_result: Optional callback invoked with the extracted items after each run.
+        scheduler: Scheduler instance to register the job on; uses the module-level
+            default scheduler when *None*.
+    """
+    if interval_seconds <= 0:
+        raise ValueError(f"interval_seconds must be positive, got {interval_seconds!r}")
     target = scheduler if scheduler is not None else _default_scheduler
     cfg = config or ExtractionConfig()
 
@@ -52,8 +76,10 @@ def schedule_list_job(
 
 
 def get_default_scheduler() -> Scheduler:
+    """Return the module-level default :class:`~htmlmark.scheduler.Scheduler`."""
     return _default_scheduler
 
 
 def reset_default_scheduler() -> None:
+    """Clear all jobs registered on the module-level default scheduler."""
     _default_scheduler.clear()
