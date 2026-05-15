@@ -53,6 +53,18 @@ def _matches(cell: str, match, case_sensitive: bool) -> bool:
     return pattern in text
 
 
+def _validate_rule(rule: Rule) -> None:
+    """Raise *ClassifyError* if *rule* is missing required keys or has invalid types."""
+    if "label" not in rule:
+        raise ClassifyError("Each rule must have a 'label' key.")
+    if "match" not in rule:
+        raise ClassifyError("Each rule must have a 'match' key.")
+    if not isinstance(rule["label"], str):
+        raise ClassifyError("Rule 'label' must be a string.")
+    if not callable(rule["match"]) and not isinstance(rule["match"], str):
+        raise ClassifyError("Rule 'match' must be a string or callable.")
+
+
 def classify_table(
     headers: List[str],
     rows: List[List[str]],
@@ -62,6 +74,8 @@ def classify_table(
     """Apply ordered *rules* to each row; first match wins."""
     if not isinstance(rows, list):
         raise ClassifyError("rows must be a list")
+    for rule in rules:
+        _validate_rule(rule)
     classified: List[ClassifiedRow] = []
     for row in rows:
         label = default_label
@@ -83,6 +97,8 @@ def classify_list(
     default_label: str = "other",
 ) -> List[ClassifiedItem]:
     """Classify plain text list items using *rules*."""
+    for rule in rules:
+        _validate_rule(rule)
     result: List[ClassifiedItem] = []
     for item in items:
         label = default_label
