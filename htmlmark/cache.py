@@ -49,6 +49,17 @@ def size() -> int:
     return len(_memory_cache)
 
 
+def has(html: str, config_dict: Optional[dict] = None) -> bool:
+    """Return True if a cached result exists for the given HTML and config.
+
+    This is a lightweight existence check that avoids returning the cached
+    value itself, useful when you only need to know whether a result is
+    already cached before deciding whether to compute it.
+    """
+    key = _make_key(html, config_dict)
+    return key in _memory_cache
+
+
 def save_to_file(path: str) -> None:
     """Persist the memory cache to a JSON file."""
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
