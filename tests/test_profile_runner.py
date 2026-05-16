@@ -67,3 +67,10 @@ def test_format_report_shows_slowest():
     text = format_report(report)
     assert "slow" in text
     assert "slowest" in text
+
+
+def test_format_report_empty_steps_does_not_raise():
+    """format_report should handle a report with no steps without raising."""
+    report = ProfileReport(label="empty")
+    text = format_report(report)
+    assert "empty" in text
